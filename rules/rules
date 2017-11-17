@@ -1,0 +1,45 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# debian/rules file for Suricata
+# dWritten by Pierre Chifflier
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+
+export DEB_BUILD_MAINT_OPTIONS=hardening=+pie,+bindnow
+
+DEB_DESTDIR = $(CURDIR)/debian/suricata
+
+ARCH ?= $(shell dpkg --print-architecture)
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+CONFIGURE_ARGS = --enable-luajit --enable-gccprotect --enable-pfring --enable-af-packet --enable-nfqueue --disable-gccmarch-native --disable-coccinelle
+
+override_dh_auto_install:
+	dh_auto_install --destdir=$(DEB_DESTDIR)
+	rm -rf $(DEB_DESTDIR)/usr/lib/python*;\
+	(cd scripts/suricatasc &&\
+		python -B setup.py install --install-layout=deb --prefix $(DEB_DESTDIR)/usr)
+	# we don't want to deploy any of the libhtp files, only the .so
+	rm -rf $(CURDIR)/debian/suricata/usr/lib/*/*.la
+	rm -rf $(CURDIR)/debian/suricata/usr/lib/*/*.a
+	rm -rf $(CURDIR)/debian/suricata/usr/lib/*/*.so
+	rm -rf $(CURDIR)/debian/suricata/usr/lib/*/pkgconfig
+	rm -rf $(CURDIR)/debian/suricata/usr/include
+	# clean upstream install documentation
+	rm -rf $(CURDIR)/debian/suricata/usr/share/doc/suricata/*
+
+override_dh_auto_configure:
+#	./configure
+	dh_auto_configure -- $(CONFIGURE_ARGS)
+
+override_dh_clean:
+	rm -f suricata-debian.yaml
+	dh_clean
+
+%:
+	dh $@ --with autoreconf,python2

@@ -585,6 +585,9 @@ typedef struct Packet_
      */
     struct PktPool_ *pool;
 
+//#COLLECTIVE_SENSE
+    TCPOpt tcp_opts[TCP_OPTMAX];
+//#COLLECTIVE_SENSE_END
 #ifdef PROFILING
     PktProfiling *profile;
 #endif

@@ -50,8 +50,9 @@
 static int DecodeTCPOptions(Packet *p, uint8_t *pkt, uint16_t len)
 {
     uint8_t tcp_opt_cnt = 0;
-    TCPOpt tcp_opts[TCP_OPTMAX];
-
+//#COLLECTIVE_SENSE
+    TCPOpt* tcp_opts = p->tcp_opts;
+//#COLLECTIVE_SENSE_END
     uint16_t plen = len;
     while (plen)
     {

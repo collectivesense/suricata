@@ -240,6 +240,15 @@ detect-target.c detect-target.h \
 detect-template.c detect-template.h \
 detect-template-buffer.c detect-template-buffer.h \
 detect-threshold.c detect-threshold.h \
+decode-rtcp.h \
+detect-capture.h \
+detect-timedelta.c                 detect-timedelta.h               \
+detect-timedelta-common.h \
+detect-timedelta-logger.c          detect-timedelta-logger.h        \
+detect-timedelta-flow.c            detect-timedelta-flow.h          \
+detect-timedelta-objects.h \
+detect-timedelta-utils.c           detect-timedelta-utils.h         \
+detect-timedelta-processing.c      detect-timedelta-processing.h    \
 detect-tls.c detect-tls.h \
 detect-tls-cert-validity.c detect-tls-cert-validity.h \
 detect-tls-version.c detect-tls-version.h \

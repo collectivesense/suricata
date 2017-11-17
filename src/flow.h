@@ -29,6 +29,9 @@
 #include "util-atomic.h"
 #include "detect-tag.h"
 #include "util-optimize.h"
+//#TIMEDELTA
+#include "detect-timedelta-objects.h"
+//#TIMEDELTA_END
 
 /* Part of the flow structure, so we declare it here.
  * The actual declaration is in app-layer-parser.c */
@@ -435,6 +438,9 @@ typedef struct Flow_
     uint32_t tosrcpktcnt;
     uint64_t todstbytecnt;
     uint64_t tosrcbytecnt;
+    //#TIMEDELTA
+    FlowInfo flowInfo;
+    //#TIMEDELTA_END
 } Flow;
 
 enum FlowState {

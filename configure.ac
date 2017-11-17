@@ -1522,6 +1522,10 @@
         enable_nspr="yes"
     fi
 
+  # nanomsg
+    LIBS="${LIBS} -lnanomsg"
+  # libcs
+    LIBS="${LIBS} -lcs"
   # libnss
     enable_nss="no"
 

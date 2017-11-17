@@ -171,6 +171,22 @@
 #include "util-storage.h"
 #include "host-storage.h"
 
+//#COLLECTIVE_SENSE
+#include "detect-nanomsg.h"
+char nanomsg_url_td[128];  //timedelta
+char nanomsg_url_ph[128];  //packet_headers
+char nanomsg_url_sig[128]; //signatures
+char nanomsg_url_dns[128];
+char nanomsg_url_tls[128];
+char nanomsg_url_http[128];
+char nanomsg_url_rtcp[128];
+char dns_log_write_to_file = FALSE;
+char tls_log_write_to_file = FALSE;
+char http_log_write_to_file = FALSE;
+char fast_log_write_to_file = FALSE;
+char disable_nanomsg = FALSE; // to be able to work without connection to mq-broker
+//#COLLECTIVE_SENSE_END
+
 #include "util-lua.h"
 #include "log-filestore.h"
 
@@ -1485,6 +1501,20 @@ static TmEcode ParseCommandLine(int argc, char** argv, SCInstance *suri)
 
     struct option long_opts[] = {
         {"dump-config", 0, &dump_config, 1},
+//#COLLECTIVE_SENSE
+        {"nanomsg-url-td", required_argument, 0, 0},
+        {"nanomsg-url-ph", required_argument, 0, 0},
+        {"nanomsg-url-sig", required_argument, 0, 0},
+        {"nanomsg-url-dns", required_argument, 0, 0},
+        {"nanomsg-url-tls", required_argument, 0, 0},
+        {"nanomsg-url-http", required_argument, 0, 0},
+        {"nanomsg-url-rtcp", required_argument, 0, 0},
+        {"write-log-file-dns", no_argument, 0, 0},
+        {"write-log-file-tls", no_argument, 0, 0},
+        {"write-log-file-http", no_argument, 0, 0},
+        {"write-log-file-fast", no_argument, 0, 0},
+        {"disable-nanomsg", no_argument, 0, 0},
+//#COLLECTIVE_SENSE_END
         {"pfring", optional_argument, 0, 0},
         {"pfring-int", required_argument, 0, 0},
         {"pfring-cluster-id", required_argument, 0, 0},
@@ -1586,6 +1616,59 @@ static TmEcode ParseCommandLine(int argc, char** argv, SCInstance *suri)
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, &option_index)) != -1) {
         switch (opt) {
         case 0:
+//#COLLECTIVE_SENSE
+            if (strcmp((long_opts[option_index]).name , "nanomsg-url-td") == 0) {
+                strlcpy(nanomsg_url_td, optarg,
+                            ((strlen(optarg) < sizeof(nanomsg_url_td)) ?
+                             (strlen(optarg) + 1) : sizeof(nanomsg_url_td)));
+            } else
+            if (strcmp((long_opts[option_index]).name , "nanomsg-url-ph") == 0) {
+                strlcpy(nanomsg_url_ph, optarg,
+                            ((strlen(optarg) < sizeof(nanomsg_url_ph)) ?
+                             (strlen(optarg) + 1) : sizeof(nanomsg_url_ph)));
+            } else
+            if (strcmp((long_opts[option_index]).name , "nanomsg-url-sig") == 0) {
+                strlcpy(nanomsg_url_sig, optarg,
+                            ((strlen(optarg) < sizeof(nanomsg_url_sig)) ?
+                             (strlen(optarg) + 1) : sizeof(nanomsg_url_sig)));
+            } else
+            if (strcmp((long_opts[option_index]).name , "nanomsg-url-dns") == 0) {
+                strlcpy(nanomsg_url_dns, optarg,
+                            ((strlen(optarg) < sizeof(nanomsg_url_dns)) ?
+                             (strlen(optarg) + 1) : sizeof(nanomsg_url_dns)));
+            } else
+            if (strcmp((long_opts[option_index]).name , "nanomsg-url-tls") == 0) {
+                strlcpy(nanomsg_url_tls, optarg,
+                            ((strlen(optarg) < sizeof(nanomsg_url_tls)) ?
+                             (strlen(optarg) + 1) : sizeof(nanomsg_url_tls)));
+            } else
+            if (strcmp((long_opts[option_index]).name , "nanomsg-url-http") == 0) {
+                strlcpy(nanomsg_url_http, optarg,
+                            ((strlen(optarg) < sizeof(nanomsg_url_http)) ?
+                             (strlen(optarg) + 1) : sizeof(nanomsg_url_http)));
+            } else
+            if (strcmp((long_opts[option_index]).name , "nanomsg-url-rtcp") == 0) {
+                strlcpy(nanomsg_url_rtcp, optarg,
+                            ((strlen(optarg) < sizeof(nanomsg_url_rtcp)) ?
+                             (strlen(optarg) + 1) : sizeof(nanomsg_url_rtcp)));
+            } else
+            if (strcmp(long_opts[option_index].name, "write-log-file-dns") == 0) {
+                dns_log_write_to_file = TRUE;
+            } else
+            if (strcmp(long_opts[option_index].name, "write-log-file-tls") == 0) {
+                tls_log_write_to_file = TRUE;
+            } else
+            if (strcmp(long_opts[option_index].name, "write-log-file-http") == 0) {
+                http_log_write_to_file = TRUE;
+            } else
+            if (strcmp(long_opts[option_index].name, "write-log-file-fast") == 0) {
+                fast_log_write_to_file = TRUE;
+            } else
+            if (strcmp(long_opts[option_index].name, "disable-nanomsg") == 0) {
+                disable_nanomsg = TRUE;
+                SCLogNotice("Suricata running in no mq-broker and kudu mode.");
+            } else
+//#COLLECTIVE_SENSE_END
             if (strcmp((long_opts[option_index]).name , "pfring") == 0 ||
                 strcmp((long_opts[option_index]).name , "pfring-int") == 0) {
 #ifdef HAVE_PFRING
@@ -2806,8 +2889,13 @@ static void SuricataMainLoop(SCInstance *suri)
     }
 }
 
-int main(int argc, char **argv)
+//#COLLECTIVE_SENSE
+int _main(int argc, char **argv)
 {
+    for(int i=0; i < argc; i++) {
+        printf("argv[%d]: %s\n", i, argv[i]);
+    }
+//#COLLECTIVE_SENSE_END
     SCInstance suri;
     SCInstanceInit(&suri, argv[0]);
 
@@ -2947,3 +3035,99 @@ int main(int argc, char **argv)
 
     exit(EXIT_SUCCESS);
 }
+
+//#COLLECTIVE_SENSE //#TIMEDELTA
+int read_initfile(char* init_file, char** argv, char only_count_params)
+{
+    FILE * fp;
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int argc = 0;
+
+    if (init_file == NULL) {
+        printf("USAGE: suricata < init_config_file>\n");
+        exit(1);
+    }
+
+    fp = fopen(init_file, "r");
+    if (fp == NULL) {
+        printf("WARNING: init config file: %s\ndoes NOT exist or can not be read\n", init_file);
+        exit(1);
+    }
+
+    while ((read = getline(&line, &len, fp)) != -1) {
+        int word_size = 0;
+        int begin_word_index = 0;
+
+        for(int i=0; i<read; ++i) {
+
+            if(line[i] != ' ' && line[i] != '\n') {
+                if(word_size == 0)
+                    begin_word_index = i;
+
+                ++word_size;
+            } else {
+
+                if (!only_count_params && word_size > 0) {
+                    argv[argc] = (char*) malloc(word_size + 1 * sizeof(char));
+
+                    int k=0;
+                    for(int j=begin_word_index; j<i; ++j) {
+                        argv[argc][k++] = line[j];
+                    }
+
+                    argv[argc][k] = '\0';
+                }
+
+                if (word_size > 0) {
+                    word_size = 0;
+                    ++argc;
+                }
+            }
+        }
+    }
+
+    fclose(fp);
+    if (line)
+        free(line);
+
+    return argc;
+}
+
+int main(int argc, char **argv)
+{
+    if (argc > 1)
+    {
+        printf("Suricata Collective-Sense mod: TD v3.2.1 beta\n");
+
+        //first read a file (which is set in argv[1]) to determine number of params
+        int argc_all = read_initfile(argv[1], NULL, 1);
+
+        //we need copy 1 param from origin argv - add it to number of
+        argc_all++;
+
+        //allocate array for all chars pointers (on a stack)
+        char** argv1 = (char**) alloca(argc_all * sizeof(char*));
+
+        //copy first param from origin argv (it is program full path)
+        argv1[0] = argv[0];
+
+        //parse params from a file (skip first value)
+        read_initfile(argv[1], argv1 + 1, 0);
+
+        //call origin main function
+        int ret = _main(argc_all, argv1);
+
+        for(int i=1; i<argc_all; i++)
+            free(argv1[i]);
+
+        return ret;
+    }
+    else
+    {
+        printf("USAGE: suricata < init_config_file>\n");
+        return 1;
+    }
+}
+//#COLLECTIVE_SENSE_END //#TIMEDELTA_END

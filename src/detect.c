@@ -178,6 +178,9 @@
 #include "detect-template-buffer.h"
 #include "detect-bypass.h"
 #include "detect-engine-content-inspection.h"
+//#TIMEDELTA
+#include "detect-timedelta.h"
+//#TIMEDELTA_END
 
 #include "util-rule-vars.h"
 
@@ -3716,6 +3719,9 @@ void SigTableSetup(void)
 {
     memset(sigmatch_table, 0, sizeof(sigmatch_table));
 
+    //#TIMEDELTA
+    DetectTimeDeltaRegister();
+    //#TIMEDELTA_END
     DetectSidRegister();
     DetectPriorityRegister();
     DetectPrefilterRegister();

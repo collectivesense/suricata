@@ -1,0 +1,18 @@
+suricata (3.2.0) xenial; urgency=medium
+
+  * Bump version to 3.2.0beta1
+
+ -- Forger <forger@hurricane>  Fri, 21 Apr 2017 17:45:10 +0200
+
+suricata (3.0.1ubuntu1) xenial; urgency=medium
+
+  * Update to cslib 1.0
+
+ -- Forger <forger@hurricane>  Fri, 21 Apr 2017 14:01:20 +0200
+
+suricata (3.0.1) unstable; urgency=medium
+
+  * Initial debian package.
+    This is initial version of the debian package for suricata.
+
+ -- Leszek Mis <lm@collective-sense.com>  Wed, 24 Mar 2015 17:32:53 +0200
