@@ -826,6 +826,7 @@ static int CalculateAndLogResults(FlowInfo* flow_info )
         r->D6 = 0;
         r->reset = 0;
         r->complete = 0;
+        r->flow_id = flow_info->flow_id;
 
         TDLogDebug(flow_info->flow_id, 2, "r->src_ip[0]: %llu", r->src_ip[0]);
         TDLogDebug(flow_info->flow_id, 2, "r->src_ip[1]: %llu", r->src_ip[1]);
