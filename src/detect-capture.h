@@ -104,6 +104,9 @@ void RTCPCapture(const Packet* packet) {
             SetIp_NET32_TO_HOST64(GET_IPV4_DST_ADDR_PTR(packet), rtcpd->dst_ip);
             rtcpd->src_port = packet->sp;
             rtcpd->dst_port = packet->dp;
+            rtcpd->flow_id = 0;
+            if (packet->flow != NULL)
+                rtcpd->flow_id = packet->flow->flowInfo.flow_id;
 
             RTCPDataPacket* rtcpd_p = &rtcpd->rtcp_data_packets[0];
             rtcpd_p->type = rtcp_p.type;
@@ -370,10 +373,10 @@ void PacketHeaderCapture(const Packet* packet)
         //printf("ETH is NULL\n");
     }
 
-    // if (packet->flow != NULL) {
-    //     ph->flow_hash = packet->flow->flowInfo.flow_id;
-    //     ph->p_id = packet->flow->flowInfo.p_id;
-    // }
+    ph->flow_id = 0;
+    if (packet->flow != NULL)
+        ph->flow_id = packet->flow->flowInfo.flow_id;
+        // ph->p_id = packet->flow->flowInfo.p_id;
 
     NanomsgSendBufferIfNeeded(&nn_handler_ph);
     update_metric(ph_metric_id, 1);
