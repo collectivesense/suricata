@@ -19,13 +19,10 @@ extern char disable_nanomsg;
 
 inline void SetIp_NET32_TO_HOST64(const uint32_t* ip_N32, uint64_t* ip_H64)
 {
-    if(ip_N32[2] == 0 && ip_N32[3] == 0)
-    {
+    if(ip_N32[2] == 0 && ip_N32[3] == 0) {
         ip_H64[0] = (uint64_t)ntohl(ip_N32[0]);
         ip_H64[1] = 0;
-    }
-    else
-    {
+    } else {
         ip_H64[0] = (uint64_t)ntohl(ip_N32[0]) << 32 | (uint64_t)ntohl(ip_N32[1]);
         ip_H64[1] = (uint64_t)ntohl(ip_N32[2]) << 32 | (uint64_t)ntohl(ip_N32[3]);
     }
@@ -34,8 +31,7 @@ inline void SetIp_NET32_TO_HOST64(const uint32_t* ip_N32, uint64_t* ip_H64)
 inline uint32_t NanomsgGetEnvDebug()
 {
     uint32_t env_debug = 0;
-    if (getenv("ENV_DEBUG") != NULL)
-    {
+    if (getenv("ENV_DEBUG") != NULL) {
         if (atoi(getenv("ENV_DEBUG")) <= 0)
             env_debug = 0;
         else
@@ -50,8 +46,7 @@ inline uint32_t NanomsgGetEnvDebug()
 inline uint32_t NanomsgGetEnvMQBuffer()
 {
     uint32_t env_mq_buffer= 0;
-    if (getenv("ENV_MQ_BUFFER") != NULL)
-    {
+    if (getenv("ENV_MQ_BUFFER") != NULL) {
         if (atoi(getenv("ENV_MQ_BUFFER")) <= 0)
             env_mq_buffer = 0;
         else
@@ -92,14 +87,10 @@ inline void NanomsgReturnBufferElement(NanomsgHandler* nn_handler)
 
 inline void* NanomsgGetNextBufferElement(NanomsgHandler* nn_handler, uint32_t message_size)
 {
-    if (nn_handler == NULL)
-    {
+    if (nn_handler == NULL) {
         printf("ERROR nn_allocmsg - nn_handler == NULL\n");
         return 0;
-    }
-    else
-    if (nn_handler->inc == 0)
-    {
+    } else if (nn_handler->inc == 0) {
         nn_handler->inc = 1;
 
         if (nn_handler->debug)
@@ -111,9 +102,7 @@ inline void* NanomsgGetNextBufferElement(NanomsgHandler* nn_handler, uint32_t me
         nn_handler->max_it = nn_handler->buf_size / message_size;
 
         return nn_handler->buf;
-    }
-    else
-    {
+    } else {
         if (nn_handler->debug)
             printf("NanomsgGetNextBufferElement message_size: %u, inc: %p, inc: %zu, threadID: %lu\n", message_size, &nn_handler->inc, nn_handler->inc, pthread_self());
 
@@ -125,23 +114,18 @@ inline void* NanomsgGetNextBufferElement(NanomsgHandler* nn_handler, uint32_t me
 
 inline void NanomsgSendBufferIfNeeded(NanomsgHandler* nn_handler)
 {
-    if (nn_handler->buf == NULL)
-    {
+    if (nn_handler->buf == NULL) {
         printf("ERROR NanomsgSendBufferIfNeeded nn_handler->buf == NULL !!!!\n");
         return;
     }
 
-    if(nn_handler->inc == nn_handler->max_it)
-    {
+    if(nn_handler->inc == nn_handler->max_it) {
         if (nn_handler->debug)
             printf("Nanomsg starts sending to: %s, inc: %p, inc: %zu, threadID: %lu\n", nn_handler->url, &nn_handler->inc, nn_handler->inc, pthread_self());
 
-        if (unlikely(TRUE == disable_nanomsg))
-        {
+        if (unlikely(TRUE == disable_nanomsg)) {
             nn_freemsg(nn_handler->buf); // to work without mq-broker
-        }
-        else
-        {
+        } else {
             nn_send(nn_handler->sock, &nn_handler->buf, NN_MSG, 0);
         }
 
@@ -152,13 +136,10 @@ inline void NanomsgSendBufferIfNeeded(NanomsgHandler* nn_handler)
             printf("Nanomsg finished sending to: %s inc: %p, inc: %zu, threadID: %lu\n", nn_handler->url, &nn_handler->inc, nn_handler->inc, pthread_self());
 
         nn_handler->inc = 0;
+    } else if (nn_handler->debug) {
+        printf("Some data to log..., inc: %p, inc: %zu, threadID: %lu\n", &nn_handler->inc, nn_handler->inc, pthread_self());
+        assert(nn_handler->inc <= nn_handler->max_it);
     }
-    else
-        if (nn_handler->debug)
-        {
-            printf("Some data to log..., inc: %p, inc: %zu, threadID: %lu\n", &nn_handler->inc, nn_handler->inc, pthread_self());
-            assert(nn_handler->inc <= nn_handler->max_it);
-        }
 }
 
 extern char nanomsg_url_td[];
