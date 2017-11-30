@@ -3099,7 +3099,7 @@ int main(int argc, char **argv)
 {
     if (argc > 1)
     {
-        printf("Suricata Collective-Sense mod: TD v3.2.1 beta\n");
+        printf("Suricata Collective-Sense mod: TD v4.0.1\n");
 
         //first read a file (which is set in argv[1]) to determine number of params
         int argc_all = read_initfile(argv[1], NULL, 1);
