@@ -171,8 +171,8 @@
         // this could be client -> server request which IMMEDIATELY FOLLOWS 3-way handshake
         // (so-called T4), which is what we care about. Or it could be something else.
         if ( packet_type == PT_DIR_CS                                        && // this packet is client -> server
-            // packet->payload_len > 0                                         && // this is request from C to S, so request should contain some payload
-            ! PacketInfo_IsEmpty(& flow_info->packets[2])                    && // 3-way handshake established
+            packet->payload_len > 0                                          && // this is request from C to S, so request should contain some payload
+            !PacketInfo_IsEmpty(& flow_info->packets[2])                     && // 3-way handshake established
             ntohl(packet->tcph->th_seq) == flow_info->packets[2].seq_num     && // seq is equal to previous packet's (ACK from handshake)
             ntohl(packet->tcph->th_ack) >= flow_info->packets[2].ack_num)       // ack is at least equal or bigger (because S could send something to C before T4 packet)
         {
