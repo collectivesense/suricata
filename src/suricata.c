@@ -173,18 +173,18 @@
 
 //#COLLECTIVE_SENSE
 #include "detect-nanomsg.h"
-char nanomsg_url_td[128];  //timedelta
-char nanomsg_url_ph[128];  //packet_headers
-char nanomsg_url_sig[128]; //signatures
-char nanomsg_url_dns[128];
-char nanomsg_url_tls[128];
-char nanomsg_url_http[128];
-char nanomsg_url_rtcp[128];
+char nanomsg_url_td[128] = {0};  //timedelta
+char nanomsg_url_ph[128] = {0};  //packet_headers
+char nanomsg_url_sig[128] = {0}; //signatures
+char nanomsg_url_dns[128] = {0};
+char nanomsg_url_tls[128] = {0};
+char nanomsg_url_http[128] = {0};
+char nanomsg_url_rtcp[128] = {0};
 char dns_log_write_to_file = FALSE;
 char tls_log_write_to_file = FALSE;
 char http_log_write_to_file = FALSE;
 char fast_log_write_to_file = FALSE;
-char disable_nanomsg = FALSE; // to be able to work without connection to mq-broker
+char nanomsg_disable = FALSE; // to be able to work without connection to mq-broker
 //#COLLECTIVE_SENSE_END
 
 #include "util-lua.h"
@@ -1665,7 +1665,7 @@ static TmEcode ParseCommandLine(int argc, char** argv, SCInstance *suri)
                 fast_log_write_to_file = TRUE;
             } else
             if (strcmp(long_opts[option_index].name, "disable-nanomsg") == 0) {
-                disable_nanomsg = TRUE;
+                nanomsg_disable = TRUE;
                 SCLogNotice("Suricata running in no mq-broker and kudu mode.");
             } else
 //#COLLECTIVE_SENSE_END

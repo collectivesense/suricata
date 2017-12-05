@@ -13,9 +13,10 @@ typedef struct NanomsgHandler_ {
     uint32_t buf_size;
     size_t inc;
     size_t max_it;
+    char disable_nanomsg;
 } NanomsgHandler;
 
-extern char disable_nanomsg;
+extern char nanomsg_disable;
 
 inline void SetIp_NET32_TO_HOST64(const uint32_t* ip_N32, uint64_t* ip_H64)
 {
@@ -64,7 +65,7 @@ inline void NanomsgInit(NanomsgHandler* nn_handler, char* url, uint32_t buffer_s
     nn_handler->max_it = 0;
     nn_handler->buf = NULL;
     nn_handler->url = url;
-
+    nn_handler->disable_nanomsg = FALSE;
     nn_handler->debug = NanomsgGetEnvDebug();
     nn_handler->buf_size = NanomsgGetEnvMQBuffer();
 
@@ -74,10 +75,18 @@ inline void NanomsgInit(NanomsgHandler* nn_handler, char* url, uint32_t buffer_s
 
     assert (nn_handler->buf_size > 0);
 
-    nn_handler->sock = nn_socket (AF_SP, NN_PUSH);
-    assert (nn_handler->sock >= 0);
-    assert (nn_connect (nn_handler->sock, nn_handler->url) >= 0);
-    printf("Nanomsg socket connected - buffer size: %d, url: %s\n", nn_handler->buf_size, nn_handler->url);
+    if (nn_handler->url[0] == 0 || nanomsg_disable)
+        nn_handler->disable_nanomsg = TRUE;
+
+    if (FALSE == nn_handler->disable_nanomsg) {
+        nn_handler->sock = nn_socket (AF_SP, NN_PUSH);
+        assert (nn_handler->sock >= 0);
+        assert (nn_connect (nn_handler->sock, nn_handler->url) >= 0);
+        printf("Nanomsg socket connected - buffer size: %d, url: %s\n", nn_handler->buf_size, nn_handler->url);
+    }
+    // else {
+    //     printf("Nanomsg (disbaled) socket disconnected - buffer size: %d (buffer is still used)\n", nn_handler->buf_size);
+    // }
 }
 
 inline void NanomsgReturnBufferElement(NanomsgHandler* nn_handler)
@@ -123,7 +132,7 @@ inline void NanomsgSendBufferIfNeeded(NanomsgHandler* nn_handler)
         if (nn_handler->debug)
             printf("Nanomsg starts sending to: %s, inc: %p, inc: %zu, threadID: %lu\n", nn_handler->url, &nn_handler->inc, nn_handler->inc, pthread_self());
 
-        if (unlikely(TRUE == disable_nanomsg)) {
+        if (unlikely(TRUE == nn_handler->disable_nanomsg)) {
             nn_freemsg(nn_handler->buf); // to work without mq-broker
         } else {
             nn_send(nn_handler->sock, &nn_handler->buf, NN_MSG, 0);
