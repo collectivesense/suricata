@@ -104,6 +104,7 @@ static void FillAndSendHTTPData(const Packet *p, LogHttpFileCtx *httplog_ctx, ht
                 (uint8_t *)bstr_ptr(h_user_agent->value), bstr_len(h_user_agent->value));
     }
 
+    if (httplog_ctx->cf != NULL)
     for (i = 0; i < httplog_ctx->cf->cf_n; i++) {
         temp = 0;
         datalen = 0;
@@ -111,7 +112,7 @@ static void FillAndSendHTTPData(const Packet *p, LogHttpFileCtx *httplog_ctx, ht
         h_response_hdr = NULL;
 
         LogCustomFormatNode* node = httplog_ctx->cf->cf_nodes[i];
-        if (! node) /* Should never happen */
+        if (! node) //Should never happen
             continue;
 
         cvalue = NULL;
@@ -149,7 +150,7 @@ static void FillAndSendHTTPData(const Packet *p, LogHttpFileCtx *httplog_ctx, ht
                 }
                 break;
             case LOG_HTTP_CF_REQUEST_COOKIE:
-                 /* REQUEST COOKIE */
+                //REQUEST COOKIE
                 if (tx->request_headers != NULL) {
                     h_request_hdr = htp_table_get_c(tx->request_headers, "Cookie");
                     if (h_request_hdr != NULL) {
@@ -170,7 +171,6 @@ static void FillAndSendHTTPData(const Packet *p, LogHttpFileCtx *httplog_ctx, ht
                 break;
         }
     }
-
     // printf("HTTP RECORD:\n");
     // printf("http->timestamp: %lu\n", http->timestamp);
     // printf("http->tx_id: %lu\n", http->tx_id);
