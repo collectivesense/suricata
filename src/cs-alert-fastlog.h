@@ -8,12 +8,16 @@
 #define BUF_SIZE_SIG sizeof(SignatureData) * 1
 static __thread NanomsgHandler nn_handler_sig;
 static __thread char nn_init_sig = 0;
-static METRIC_ID fastlog_metric_id = 0;
 
 extern char fast_log_write_to_file;
 
 static void FillAndSendSIGData(const Packet *p, const PacketAlert *pa) {
     //#COLLECTIVE_SENSE #CS_SIGNATURES #TIMEDELTA
+    static METRIC_ID fastlog_metric_id = 0;
+
+    if (fastlog_metric_id < 1)
+        fastlog_metric_id = register_metric(MATCHED_SIGNATURES, (const char *)"suricata_collector");
+
     if( nn_init_sig == 0 ) {
         nn_init_sig = 1;
         NanomsgInit(&nn_handler_sig, nanomsg_url_sig, BUF_SIZE_SIG);

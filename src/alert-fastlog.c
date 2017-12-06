@@ -83,7 +83,6 @@ void AlertFastLogRegister(void)
         AlertFastLogInitCtx, AlertFastLogger, AlertFastLogCondition,
         AlertFastLogThreadInit, AlertFastLogThreadDeinit, NULL);
     AlertFastLogRegisterTests();
-    fastlog_metric_id = register_metric(MATCHED_SIGNATURES, (const char*)"suricata_collector");
 
     //#COLLECTIVE_SENSE
     if (TRUE == fast_log_write_to_file)
