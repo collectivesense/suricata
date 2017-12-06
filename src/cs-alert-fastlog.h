@@ -61,7 +61,10 @@ static void FillAndSendSIGData(const Packet *p, const PacketAlert *pa) {
     else
         sd->dst_port = 0;
 
-    sd->flow_id = p->flow->flowInfo.flow_id;
+    if (NULL != p->flow)
+        sd->flow_id = p->flow->flowInfo.flow_id;
+    else
+        sd->flow_id = 0;
 
     NanomsgSendBufferIfNeeded(&nn_handler_sig);
     update_metric(fastlog_metric_id, 1);

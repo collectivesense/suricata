@@ -87,7 +87,10 @@ static void FillAndSendTLSData(char *srcip, char *dstip, Port sp, Port dp, const
         CreateUtcIsoTimeString(&tv, tls->notAfter, sizeof(tls->notAfter));
     }
 
-    tls->flow_id = p->flow->flowInfo.flow_id;
+    if (NULL != p->flow)
+        tls->flow_id = p->flow->flowInfo.flow_id;
+    else
+        tls->flow_id = 0;
 
     NanomsgSendBufferIfNeeded(&nn_handler_tls);
     update_metric(tls_metric_id, 1);

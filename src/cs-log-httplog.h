@@ -44,10 +44,6 @@ static void FillAndSendHTTPData(const Packet *p, LogHttpFileCtx *httplog_ctx, ht
     http->req_msg_len = (uint32_t)tx->request_message_len;
     http->resp_status = (uint16_t)tx->response_status_number;
 
-    http->flow_id = 0;
-    if (p->flow != NULL)
-        http->flow_id = p->flow->flowInfo.flow_id;
-
     if ((tx->response_status_number >= 300) && ((tx->response_status_number) < 400)) {
         htp_header_t *h_location = htp_table_get_c(tx->response_headers, "location");
         if (h_location != NULL) {
@@ -171,6 +167,12 @@ static void FillAndSendHTTPData(const Packet *p, LogHttpFileCtx *httplog_ctx, ht
                 break;
         }
     }
+
+    if (p->flow != NULL)
+        http->flow_id = p->flow->flowInfo.flow_id;
+    else
+        http->flow_id = 0;
+
     // printf("HTTP RECORD:\n");
     // printf("http->timestamp: %lu\n", http->timestamp);
     // printf("http->tx_id: %lu\n", http->tx_id);

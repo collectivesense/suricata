@@ -106,6 +106,11 @@ static void FillAndSendDNSInfo(const Packet *p, DNSTransaction *tx, DNSQueryEntr
     memcpy(dns->r_uri_or_ip, tx_r_uri[dns->tx_id], sizeof(dns->r_uri_or_ip));
     dns->r_uri_or_ip[sizeof(dns->r_uri_or_ip)-1] = '\0';
 
+    if (NULL != p->flow)
+        dns->flow_id = p->flow->flowInfo.flow_id;
+    else
+        dns->flow_id = 0;
+
     // printf("DNS RECORD:\n");
     // printf("dns->timestamp: %lu\n", dns->timestamp);
     // printf("dns->tx_id: %d\n", dns->tx_id);
