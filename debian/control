@@ -17,7 +17,7 @@ Build-Depends: autotools-dev,
                libpcre3-dev,
                libprelude-dev, python,
                libyaml-dev, nanomsg, nanomsg-dev, pfring, autoconf, libjconv-bin, libjconv-dev, libnspr4-dev, libluajit-5.1-dev,
-               cslib (>= 1.3),
+               cslib (>= 1.4),
                cslib-dev (>= 1.3),
                zlib1g-dev | libz-dev
 Standards-Version: 3.9.6

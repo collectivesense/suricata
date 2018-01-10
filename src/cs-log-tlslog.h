@@ -12,36 +12,24 @@ static __thread char nn_init_tls = 0;
 extern char tls_log_write_to_file;
 //#COLLECTIVE_SENSE_END
 
-//Separates protocol and version bytes (major,minor)
-//from the original packet version bytes.
-static void LogTlsLogVer(uint8_t *protoEnum, uint16_t *verBytes, uint16_t version)
+//Converts original version bytes from packet
+//to single byte protocol and version enum
+static uint8_t DecodeTlsVersion(uint16_t version)
 {
     switch (version) {
         case SSL_VERSION_2:
-	    *protoEnum = 1;
-	    *verBytes = 0x0200;
-            break;
+	    return CS_TLS_VER_SSL_2;
         case SSL_VERSION_3:
-  	    *protoEnum = 1;
-	    *verBytes = 0x0300;
-            break;
+	    return CS_TLS_VER_SSL_3;
         case TLS_VERSION_10:
-  	    *protoEnum = 2;
-	    *verBytes = 0x0100;
-            break;
+	    return CS_TLS_VER_10;
         case TLS_VERSION_11:
-	    *protoEnum = 2;
-	    *verBytes = 0x0101;
-            break;
+	    return CS_TLS_VER_11;
         case TLS_VERSION_12:
-	    *protoEnum = 2;
-	    *verBytes = 0x0102;
-            break;
+	    return CS_TLS_VER_12;
         //case TLS_VERSION_UNKNOWN: same as 'default'
         default:
-	    *protoEnum = 0; // protocol is unknown
-	    *verBytes = version; // set original version bytes?
-            break;
+	    return CS_TLS_VER_UNKNOWN;
     }
 }
 
@@ -65,8 +53,7 @@ static void FillAndSendTLSData(char *srcip, char *dstip, Port sp, Port dp, const
     tls->src_ip[1] = 0;
     tls->dst_ip[0] = 0;
     tls->dst_ip[1] = 0;
-    tls->proto = 0;
-    tls->ver = 0;
+    tls->version = CS_TLS_VER_UNKNOWN;
 
     SetIp_NET32_TO_HOST64(GET_IPV4_SRC_ADDR_PTR(p), tls->src_ip);
     SetIp_NET32_TO_HOST64(GET_IPV4_DST_ADDR_PTR(p), tls->dst_ip);
@@ -101,7 +88,7 @@ static void FillAndSendTLSData(char *srcip, char *dstip, Port sp, Port dp, const
         memcpy(tls->sni, state->client_connp.sni, MIN(sizeof(tls->sni), strlen(state->client_connp.sni)));
     }
 
-    LogTlsLogVer(&tls->proto, &tls->ver, state->server_connp.version);
+    tls->version = DecodeTlsVersion(state->server_connp.version);
 
     tls->notBeforeSec = state->server_connp.cert0_not_before;
     tls->notAfterSec = state->server_connp.cert0_not_after;
