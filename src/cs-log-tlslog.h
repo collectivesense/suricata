@@ -12,7 +12,29 @@ static __thread char nn_init_tls = 0;
 extern char tls_log_write_to_file;
 //#COLLECTIVE_SENSE_END
 
+//Converts original version bytes from packet
+//to single byte protocol and version enum
+static uint8_t DecodeTlsVersion(uint16_t version)
+{
+    switch (version) {
+        case SSL_VERSION_2:
+	    return CS_TLS_VER_SSL_2;
+        case SSL_VERSION_3:
+	    return CS_TLS_VER_SSL_3;
+        case TLS_VERSION_10:
+	    return CS_TLS_VER_10;
+        case TLS_VERSION_11:
+	    return CS_TLS_VER_11;
+        case TLS_VERSION_12:
+	    return CS_TLS_VER_12;
+        //case TLS_VERSION_UNKNOWN: same as 'default'
+        default:
+	    return CS_TLS_VER_UNKNOWN;
+    }
+}
+
 static void FillAndSendTLSData(char *srcip, char *dstip, Port sp, Port dp, const Packet *p, SSLState *state) {
+
     static METRIC_ID tls_metric_id = 0;
 
     if (tls_metric_id < 1)
@@ -31,6 +53,7 @@ static void FillAndSendTLSData(char *srcip, char *dstip, Port sp, Port dp, const
     tls->src_ip[1] = 0;
     tls->dst_ip[0] = 0;
     tls->dst_ip[1] = 0;
+    tls->version = CS_TLS_VER_UNKNOWN;
 
     SetIp_NET32_TO_HOST64(GET_IPV4_SRC_ADDR_PTR(p), tls->src_ip);
     SetIp_NET32_TO_HOST64(GET_IPV4_DST_ADDR_PTR(p), tls->dst_ip);
@@ -65,27 +88,10 @@ static void FillAndSendTLSData(char *srcip, char *dstip, Port sp, Port dp, const
         memcpy(tls->sni, state->client_connp.sni, MIN(sizeof(tls->sni), strlen(state->client_connp.sni)));
     }
 
-    MemBuffer temp;
-    temp.buffer = (uint8_t*) tls->version;
-    temp.size = sizeof(tls->version);
-    temp.offset = 0;
-    LogTlsLogVersion(&temp, state->server_connp.version);
+    tls->version = DecodeTlsVersion(state->server_connp.version);
 
-    memset(tls->notBefore, 0, sizeof(tls->notBefore));
-    if (state->server_connp.cert0_not_before != 0) {
-        struct timeval tv;
-        tv.tv_sec = state->server_connp.cert0_not_before;
-        tv.tv_usec = 0;
-        CreateUtcIsoTimeString(&tv, tls->notBefore, sizeof(tls->notBefore));
-    }
-
-    memset(tls->notAfter, 0, sizeof(tls->notAfter));
-    if (state->server_connp.cert0_not_after != 0) {
-        struct timeval tv;
-        tv.tv_sec = state->server_connp.cert0_not_after;
-        tv.tv_usec = 0;
-        CreateUtcIsoTimeString(&tv, tls->notAfter, sizeof(tls->notAfter));
-    }
+    tls->notBeforeSec = state->server_connp.cert0_not_before;
+    tls->notAfterSec = state->server_connp.cert0_not_after;
 
     if (NULL != p->flow)
         tls->flow_id = p->flow->flowInfo.flow_id;
