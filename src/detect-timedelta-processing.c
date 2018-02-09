@@ -108,7 +108,7 @@
 // SPECIFIC PACKET PROCESSING
 //
 ////////////////////////////////////////////////////////////////////////////////
-
+    static int ProcessPacketT4(const Packet*, FlowInfo*, PacketType);
     static int ProcessPacketT5(const Packet*, FlowInfo*, PacketType);
     static int ProcessPacketT6(const Packet*, FlowInfo*, PacketType);
 
@@ -127,6 +127,7 @@
         if( ! PacketInfo_IsEmpty(& flow_info->packets[0])                    &&  // previous packet (#0) was received (SYN packet)
             ntohl(packet->tcph->th_ack) == flow_info->packets[0].seq_num + 1 )   // ack number corresponds to SYN's seq number
         {
+            //printf("ProcessPacketT2 - OK!\n");
             return FlowInfo_InitPacket( flow_info, 1, packet, PT_DIR_SC );
         }
         // if this is not it
@@ -151,16 +152,19 @@
             ntohl(packet->tcph->th_ack) == flow_info->packets[1].seq_num + 1 && // \_ ack and seq numbers correspond
             ntohl(packet->tcph->th_seq) == flow_info->packets[1].ack_num     )  // /  to previous packet's
         {
+            //printf("ProcessPacketT3 - OK!\n");
             return FlowInfo_InitPacket( flow_info, 2, packet, PT_DIR_CS );
         }
         // if this is NOT a response to SYN+ACK
         else
         {
-            TDLogDebug( flow_info->flow_id, 2, "ACK to something else - forwarding to T5/T6" );
-            if( packet->payload_len > 0 )
-                return ProcessPacketT6( packet, flow_info, packet_type );
-            else
-                return ProcessPacketT5( packet, flow_info, packet_type );
+            TDLogDebug( flow_info->flow_id, 2, "ACK to something else - forwarding to T4" );
+            ProcessPacketT4( packet, flow_info, packet_type );
+
+            //if( packet->payload_len > 0 )
+            //    return ProcessPacketT6( packet, flow_info, packet_type );
+            //else
+            //    return ProcessPacketT5( packet, flow_info, packet_type );
         }
     }
 
@@ -176,11 +180,13 @@
             ntohl(packet->tcph->th_seq) == flow_info->packets[2].seq_num     && // seq is equal to previous packet's (ACK from handshake)
             ntohl(packet->tcph->th_ack) >= flow_info->packets[2].ack_num)       // ack is at least equal or bigger (because S could send something to C before T4 packet)
         {
+            //printf("ProcessPacketT4 - OK!\n");
             return FlowInfo_InitPacket( flow_info, 3, packet, PT_DIR_CS );
         }
         // if this is not it
         else
         {
+            //printf("ProcessPacketT4 - Some other ACK+PSH - forwarding to T5/T6!\n");
             TDLogDebug( flow_info->flow_id, 2, "Some other ACK+PSH - forwarding to T5/T6" );
 
             if( packet->payload_len > 0 )
@@ -206,12 +212,14 @@
             ntohl(packet->tcph->th_ack) >= flow_info->packets[3].seq_num + flow_info->packets[3].payload_len && // ack number can be bigger or equal becaue C could send more packets in the meantime (as a request)
             ntohl(packet->tcph->th_seq) == flow_info->packets[3].ack_num    )  // seq number correspond to T4 (because it should be the first packet from S->C after T4)
         {
+            //printf("ProcessPacketT5 - OK!\n");
             return FlowInfo_InitPacket( flow_info, 4, packet, PT_DIR_SC );
         }
 
         // if this is not it
         else
         {
+            //printf("ProcessPacketT5 - Ignoring the packet!\n");
             TDLogDebug( flow_info->flow_id, 2, "ProcessPacketT5 Ignoring the packet" );
             return 0;
         }
@@ -244,6 +252,7 @@
                                                                                    // so ACK num can be equal or bigger
             ))
         ){
+            //printf("ProcessPacketT6 - OK!\n");
             int ret = FlowInfo_InitPacket( flow_info, 5, packet, PT_DIR_SC );
 
             // if we were running is T6noT5 special mode
@@ -273,6 +282,7 @@
                 }
                 else
                 {
+                    //printf("ProcessPacketT6 - not sure...!\n");
                     return 0;   //TODO not sure if this branch makes sense.  It will be executed only on redundant but different packet.  Can this even happen, since on the first T6 we will erase the flow?  No other ProcessPacketT*() have this if either.
                 }
             }
@@ -281,6 +291,7 @@
         // if this is not it
         else if( !g_T6noT5mode )    // if, so we don't spam log again during flow expiration
         {
+            //printf("T6 Ignoring the packet!\n");
             TDLogDebug( flow_info->flow_id, 2, "Ignoring the packet" );
         }
         return 0;
@@ -309,6 +320,7 @@
             TDLogDebug( flow_info->flow_id, 2, "MATH: T2=%lu.%lu reset=1", packet->ts.tv_sec, packet->ts.tv_usec );
             
             //KK
+            //printf("ProcessPacketRS -init...\n");
             FlowInfo_InitPacket( flow_info, 1, packet, PT_DIR_SC );
             TDLogDebug( flow_info->flow_id, 1, "ProcessPacketRS -> ExpireFlow" );
             //printf("ProcessPacketRS -> ExpireFlow\n");
@@ -336,6 +348,7 @@
         {
             // packet is unrelated to current flow we have in hashtable, yet the flow id is the same!
             case PT_UNRELATED:
+                //printf("PT_UNRELATED!\n");
                 return 0;
             break;
 
@@ -345,6 +358,14 @@
                 {
                     return ProcessPacketT2( packet, flow_info );
                 }
+		//else
+		//{
+                //    if( packet->payload_len > 0 )
+	        //        return ProcessPacketT6( packet, flow_info, packet_type );
+                //    else
+                //        return ProcessPacketT5( packet, flow_info, packet_type );
+		//}
+
             /* yes, no break */
 
             // packet is client -> server
@@ -352,7 +373,7 @@
 
                 if( tcp_flags == TH_ACK )
                 {
-                    return ProcessPacketT3( packet, flow_info, packet_direction );  // may also call ProcessPacketT5/T6()
+                    return ProcessPacketT3( packet, flow_info, packet_direction );  // may also call ProcessPacketT4()
                 }
                 else if( tcp_flags == TH_ACK+TH_PUSH || tcp_flags == TH_ACK+TH_PUSH+TH_FIN )
                 {
@@ -364,6 +385,7 @@
                 }
                 else
                 {
+		    //printf("Unhandled packet\n");
                     TDLogDebug( flow_info->flow_id, 2, "Unhandled packet" );
                     return 0;
                 }
@@ -704,6 +726,7 @@
         uint8_t tcp_flags = packet->tcph->th_flags;
 
         TDLogDebug( packet->flow->flowInfo.flow_id, 1, "tcp_flags: %x, src_port: %u, dst_port: %u, plen: %d, ts: %u, th_seq: %ld\n", tcp_flags, packet->sp, packet->dp, packet->payload_len, packet->ts.tv_usec, ntohl(packet->tcph->th_seq));
+        //printf("ts: %u, tu: %u, tcp_flags: %x, src_port: %u, dst_port: %u, plen: %d, ts: %u, th_seq: %ld\n", packet->ts.tv_sec, packet->ts.tv_usec, tcp_flags, packet->sp, packet->dp, packet->payload_len, ntohl(packet->tcph->th_seq));
 
         // if we don't have this flow yet, must be new.  Let's try to create it (and return, since there'll be nothing else to process):
         //   on SYN     -> create and fully-initialise the flow,
@@ -849,7 +872,7 @@ static int CalculateAndLogResults(FlowInfo* flow_info )
     else
     {
         TDLogDebug( flow_info->flow_id, 2, "FIRST packet is EMPTY - log skipped");
-        //printf("FIRST packet is EMPTY - log skipped\n");
+        printf("FIRST packet is EMPTY - log skipped\n");
         return 0;
     }
 
@@ -891,7 +914,7 @@ static int CalculateAndLogResults(FlowInfo* flow_info )
     packet++;
     if( !PacketInfo_IsEmpty(packet) )
     {
-        if (packet->tcp_flags == TH_PUSH+TH_ACK || packet->tcp_flags == TH_PUSH+TH_ACK+TH_FIN )
+        if (packet->tcp_flags == TH_ACK || packet->tcp_flags == TH_PUSH+TH_ACK || packet->tcp_flags == TH_PUSH+TH_ACK+TH_FIN )
         {
             r->D4 = packet->timestamp - r->T1;
             TDLogDebug(flow_info->flow_id, 2, "r->D4: %u", r->D4);
@@ -934,6 +957,9 @@ static int CalculateAndLogResults(FlowInfo* flow_info )
         else
             printf("CalculateAndLogResults - Packet T6 unexpected flag: %x\n", packet->tcp_flags);
     }
+
+    //printf("r->reset: %u\n", (int)r->reset);
+    //printf("r->complete: %u\n", (int)r->complete);
 
     //return LogResultsToUnified2( &r );
 
