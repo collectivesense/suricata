@@ -133,7 +133,7 @@ typedef struct FlowInfo_
     uint8_t pp_id;
 
     //timestamp val from the last packet
-    uint64_t p_ts;
+    //uint64_t p_ts;
     //internal packet id in the flow...
     uint64_t p_id;
 }

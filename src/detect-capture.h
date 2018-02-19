@@ -254,7 +254,7 @@ char compare_packet_with_packet_ext(const Packet* packet, const PacketExtInfo* p
         return 0;
 }
 
-void PacketTSValidationAndFix(Packet* packet) {
+void SetPacketFlowIdAndPacketId(Packet* packet) {
     if (packet->flow == NULL)
         return;
 
@@ -264,17 +264,22 @@ void PacketTSValidationAndFix(Packet* packet) {
     } else {
         ++packet->flow->flowInfo.p_id;
     }
-
-    if (packet->flow->flowInfo.p_ts == GetTimestampInMicroSec(packet->ts)) {
-        ++packet->flow->flowInfo.p_ts;
-        packet->ts.tv_sec = packet->flow->flowInfo.p_ts / 1000000;
-        packet->ts.tv_usec = packet->flow->flowInfo.p_ts % 1000000;
-        //packet->ts.tv_sec = packet->flow->flowInfo.p_ts / 1000000000;
-        //packet->ts.tv_usec = packet->flow->flowInfo.p_ts % 1000000000;
-    } else {
-        packet->flow->flowInfo.p_ts = GetTimestampInMicroSec(packet->ts);
-    }
 }
+
+//void PacketTSValidationAndFix(Packet* packet) {
+//    if (packet->flow == NULL)
+//        return;
+//
+//    if (packet->flow->flowInfo.p_ts == GetTimestampInMicroSec(packet->ts)) {
+//        ++packet->flow->flowInfo.p_ts;
+//        packet->ts.tv_sec = packet->flow->flowInfo.p_ts / 1000000;
+//        packet->ts.tv_usec = packet->flow->flowInfo.p_ts % 1000000;
+//        //packet->ts.tv_sec = packet->flow->flowInfo.p_ts / 1000000000;
+//        //packet->ts.tv_usec = packet->flow->flowInfo.p_ts % 1000000000;
+//    } else {
+//        packet->flow->flowInfo.p_ts = GetTimestampInMicroSec(packet->ts);
+//    }
+//}
 
 //#define URL_PH "ipc:///tmp/packetheaders-pipeline.ipc"
 #define BUF_SIZE_PH sizeof(PacketHeaderData) * 10
