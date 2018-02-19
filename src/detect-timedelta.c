@@ -54,7 +54,8 @@ int DetectTimeDeltaMatch( ThreadVars* thread_vars, DetectEngineThreadCtx* det_ct
     if (packet->proto == 0 && packet->sp == 0 && packet->dp == 0)
         return 0;
 
-    PacketTSValidationAndFix(packet);
+    SetPacketFlowIdAndPacketId(packet);
+    //PacketTSValidationAndFix(packet);
 
     //RTCP CAPTURE HANDLER
     if ( is_rtcp_packet(packet->payload, packet->payload_len)

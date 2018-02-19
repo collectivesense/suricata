@@ -239,16 +239,7 @@ static inline void PfringProcessPacket(void *user, struct pfring_pkthdr *h, Pack
     //printf("  packet ts=%ld.%06ld\n", h->ts.tv_sec, h->ts.tv_usec);
     //printf("packet hwts=%ld.%06ld\n", h->extended_hdr.timestamp_ns/(1000*1000*1000), (h->extended_hdr.timestamp_ns/1000)%(1000*1000));
     //printf("packet hwts=%lld\n", (long long)h->extended_hdr.timestamp_ns);
-#if 1
-    //KK's change - USE SW TIMESTAMP
-    struct timespec t;
-    clock_gettime(CLOCK_REALTIME, &t);
-    p->ts.tv_sec = t.tv_sec;
-    p->ts.tv_usec = t.tv_nsec/1000;
-    //p->ts.tv_sec = h->ts.tv_sec;
-    //p->ts.tv_usec = h->ts.tv_usec;
-    //printf("packet cg_ts=%ld.%06ld\n", p->ts.tv_sec, p->ts.tv_usec);
-#else
+
     //Copy timestamp, prefer hw timestamp
     if (h->extended_hdr.timestamp_ns){
         p->ts.tv_sec = h->extended_hdr.timestamp_ns/(1000*1000*1000);
@@ -260,7 +251,6 @@ static inline void PfringProcessPacket(void *user, struct pfring_pkthdr *h, Pack
         p->ts.tv_sec = h->ts.tv_sec;
         p->ts.tv_usec = h->ts.tv_usec;
     }
-#endif
 //#COLLECTIVE_SENSE_END
     /* PF_RING all packets are marked as a link type of ethernet
      * so that is what we do here. */
