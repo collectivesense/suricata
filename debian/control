@@ -1,6 +1,6 @@
 Source: suricata
 Priority: extra
-Section: unknown
+Section: universe/net
 Maintainer: Leszek Mis <lm@collective-sense.com>
 Build-Depends: autotools-dev,
                debhelper (>= 9.0.0),
@@ -16,9 +16,9 @@ Build-Depends: autotools-dev,
                libpcap-dev,
                libpcre3-dev,
                libprelude-dev, python,
-               libyaml-dev, nanomsg, nanomsg-dev, pfring, autoconf, libjconv-bin, libjconv-dev, libnspr4-dev, libluajit-5.1-dev,
+               libyaml-dev, libnanomsg5, libnanomsg-dev, pfring, autoconf, libjconv-bin, libjconv-dev, libnspr4-dev, libluajit-5.1-dev,
                cslib (>= 1.4),
-               cslib-dev (>= 1.3),
+               cslib-dev (>= 1.4),
                zlib1g-dev | libz-dev
 Standards-Version: 3.9.6
 Homepage: https://suricata-ids.org/
