@@ -2,7 +2,6 @@
 #define __CS_ALERT_FASTLOG_H__
 
 #include <cs/cscommon.h>
-#include <cs/PeriodicMultipleMetricsCollector.h>
 #include "detect-nanomsg.h"
 //#define URL_SIG "ipc:///tmp/signature-pipeline.ipc"
 #define BUF_SIZE_SIG sizeof(SignatureData) * 1
@@ -13,17 +12,13 @@ extern char fast_log_write_to_file;
 
 static void FillAndSendSIGData(const Packet *p, const PacketAlert *pa) {
     //#COLLECTIVE_SENSE #CS_SIGNATURES #TIMEDELTA
-    static METRIC_ID fastlog_metric_id = 0;
-
-    if (fastlog_metric_id < 1)
-        fastlog_metric_id = register_metric(MATCHED_SIGNATURES, (const char *)"suricata_collector");
 
     if( nn_init_sig == 0 ) {
         nn_init_sig = 1;
-        NanomsgInit(&nn_handler_sig, nanomsg_url_sig, BUF_SIZE_SIG);
+        NanomsgInit(&nn_handler_sig, nanomsg_url_sig, sizeof(SignatureData), MATCHED_SIGNATURES);
     }
 
-    SignatureData* sd = (SignatureData*)NanomsgGetNextBufferElement(&nn_handler_sig, sizeof(SignatureData));
+    SignatureData* sd = (SignatureData*)NanomsgGetNextBufferElement(&nn_handler_sig);
     sd->timestamp_usec = p->ts.tv_sec * 1000000L + p->ts.tv_usec;
 
     sd->sid = pa->s->id;
@@ -67,7 +62,6 @@ static void FillAndSendSIGData(const Packet *p, const PacketAlert *pa) {
         sd->flow_id = 0;
 
     NanomsgSendBufferIfNeeded(&nn_handler_sig);
-    update_metric(fastlog_metric_id, 1);
     //#COLLECTIVE_SENSE_END #CS_SIGNATURES_END
 }
 #endif

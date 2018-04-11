@@ -7,7 +7,6 @@
 
 // our plugin
 #include <cs/cscommon.h>
-#include <cs/PeriodicMultipleMetricsCollector.h>
 #include "detect-timedelta.h"
 #include "detect-timedelta-flow.h"          // structs and related functions (you can think of them as classes and methods if you're familiar with OOP)
 #include "detect-timedelta-processing.h"    // packet processing, the heart of the plugin
@@ -24,7 +23,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // THIS FUNCTION IS CALLED EVERY TIME A NEW PACKET IS RECEIVED.  IT IS THE ENTRYPOINT TO THIS PLUGIN
-int DetectTimeDeltaMatch( ThreadVars* thread_vars, DetectEngineThreadCtx* det_ctx, Packet* packet, Signature* sig, SigMatch* sig_match )
+
+int DetectTimeDeltaMatch( ThreadVars* thread_vars, DetectEngineThreadCtx* det_ctx, Packet* packet, const Signature* sig, const SigMatchCtx* sig_match )
 {
     // bypass processing - useful for performance testing of the actual capture library (pfring,afpacket,pcap,etc)
     if ( !g_config_plugin_enabled ) {
@@ -98,8 +98,6 @@ void DetectTimeDeltaRegister(void)
 
     CompileRegex();
 
-    if (ph_metric_id < 1)
-        ph_metric_id = register_metric(PACKET_HEADERS,(const char*)"suricata_collector");
 }
 
 void DetectTimeDeltaFree(void *ptr)
@@ -121,7 +119,7 @@ void DetectTimeDeltaFree(void *ptr)
     }
 }
 
-static int DetectTimeDeltaSetup( DetectEngineCtx* de_ctx, Signature* s, char* config_string)
+static int DetectTimeDeltaSetup( DetectEngineCtx* de_ctx, Signature* s, const char* config_string)
 {
     // THIS FUNCTION IS CALLED: once per every rule, but not per thread (so if you have 15 threads and 3 rules, it will be called 3 times)
 
@@ -165,10 +163,13 @@ void SanityCheck()
     }
 
     FlowInfo fi;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtautological-compare"
     if( &fi != (FlowInfo*) &(fi.flow_id) ) {
         TDLogError( 0, 0, "flow_id must be the 1st member of FlowInfo - hashtable semantics in this plugin rely on this property." );
         exit( EXIT_FAILURE );
     }
+#pragma GCC diagnostic pop
 
 }
 
@@ -211,7 +212,7 @@ error:
     if( parse_regex_study != NULL ) SCFree(parse_regex_study);
 }
 
-DetectTimeDeltaData* ReadConfig( char* config_string )
+DetectTimeDeltaData* ReadConfig( const char* config_string )
 {
     TDLogInfo( 0, 0, "Reading configuration" );
 

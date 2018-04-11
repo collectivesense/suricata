@@ -40,7 +40,7 @@
 
     void   UpdateCurrentTime( TimeInMicroSec now, FlowId flow_id );
 
-    inline TimeInMicroSec GetCurrentTime()
+    inline TimeInMicroSec GetCurrentTime(void)
     {
         return g_current_time;
     }

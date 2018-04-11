@@ -32,6 +32,6 @@
     }
     DetectTimeDeltaData;
 
-    DetectTimeDeltaData* ReadConfig( char* config_string );
+    DetectTimeDeltaData* ReadConfig( const char* config_string );
     void                 FreeConfig( void* );
 

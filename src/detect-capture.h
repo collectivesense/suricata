@@ -9,6 +9,12 @@
 #include "detect-nanomsg.h"
 #include "decode-rtcp.h"
 
+void RTCPCapture(const Packet* packet);
+void copy_packet_to_ext_packet(const Packet* p, uint8_t pp_cur_id);
+char compare_packet_with_packet_ext(const Packet* packet, const PacketExtInfo* packet_ext);
+void SetPacketFlowIdAndPacketId(Packet* packet);
+void PacketHeaderCapture(const Packet* packet);
+
 #define BUF_SIZE_RTCP sizeof(RTCPData) * 1
 void RTCPCapture(const Packet* packet) {
     static __thread NanomsgHandler nn_handler_rtcp;
@@ -19,7 +25,7 @@ void RTCPCapture(const Packet* packet) {
 
     if( nn_init_rtcp == 0 ) {
         nn_init_rtcp = 1;
-        NanomsgInit(&nn_handler_rtcp, nanomsg_url_rtcp, BUF_SIZE_RTCP);
+        NanomsgInit(&nn_handler_rtcp, nanomsg_url_rtcp, sizeof(RTCPData), RTCP_RECORDS);
     }
 
     int i = 0;
@@ -94,7 +100,7 @@ void RTCPCapture(const Packet* packet) {
         //so that we need to copy whole packet here to the buffer
         if (valid_values > 0) {
 
-            RTCPData* rtcpd = (RTCPData*)NanomsgGetNextBufferElement(&nn_handler_rtcp, sizeof(RTCPData));
+            RTCPData* rtcpd = (RTCPData*)NanomsgGetNextBufferElement(&nn_handler_rtcp);
             //memset(rtcpd, 0, sizeof(RTCPData));
             //this is common data for every RTCP packet (even in the same UDP packet) but for simple solution it is repeated
             //... because we do not know how many RTCP packets is inside one UDP packet
@@ -166,7 +172,6 @@ void RTCPCapture(const Packet* packet) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-static METRIC_ID ph_metric_id = 0;
 
 // brief Regex for parsing our keyword options
 #define PARSE_REGEX  "^\\s*([^\\s]+)?\\s*,s*([0-9]+)?\\s*$"
@@ -174,13 +179,14 @@ static pcre*        parse_regex;
 static pcre_extra*  parse_regex_study;
 
 // some forward declarations
-static int  DetectTimeDeltaMatch( ThreadVars*, DetectEngineThreadCtx*, Packet*, Signature*, SigMatch* );
-static int  DetectTimeDeltaSetup( DetectEngineCtx*, Signature*, char* );
+
+static int  DetectTimeDeltaMatch( ThreadVars*, DetectEngineThreadCtx*, Packet*, const Signature*, const SigMatchCtx* );
+static int  DetectTimeDeltaSetup( DetectEngineCtx*, Signature*, const char* );
 static void DetectTimeDeltaFree ( void* );
-static void DetectTimeDeltaRegisterTests();
-static void RegisterSigmatchTable();
-static void CompileRegex();
-static void SanityCheck();
+static void DetectTimeDeltaRegisterTests(void);
+static void RegisterSigmatchTable(void);
+static void CompileRegex(void);
+static void SanityCheck(void);
 
 #define CMP_ETH_DS(p, pp) \
     (((pp)->eth_dst[0] == (p)->eth_src[0] && \
@@ -327,10 +333,10 @@ void PacketHeaderCapture(const Packet* packet)
 
     if (unlikely( nn_init_ph == 0 )) {
         nn_init_ph = 1;
-        NanomsgInit(&nn_handler_ph, nanomsg_url_ph, BUF_SIZE_PH);
+        NanomsgInit(&nn_handler_ph, nanomsg_url_ph, sizeof(PacketHeaderData), PACKET_HEADERS);
     }
 
-    PacketHeaderData* ph = (PacketHeaderData*)NanomsgGetNextBufferElement(&nn_handler_ph, sizeof(PacketHeaderData));
+    PacketHeaderData* ph = (PacketHeaderData*)NanomsgGetNextBufferElement(&nn_handler_ph);
     ph->timestamp = GetTimestampInMicroSec(packet->ts);
 
     SetIp_NET32_TO_HOST64(GET_IPV4_SRC_ADDR_PTR(packet), ph->src_ip);
@@ -384,5 +390,4 @@ void PacketHeaderCapture(const Packet* packet)
         // ph->p_id = packet->flow->flowInfo.p_id;
 
     NanomsgSendBufferIfNeeded(&nn_handler_ph);
-    update_metric(ph_metric_id, 1);
 }

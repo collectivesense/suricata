@@ -17,8 +17,8 @@ Build-Depends: autotools-dev,
                libpcre3-dev,
                libprelude-dev, python,
                libyaml-dev, libnanomsg5, libnanomsg-dev, pfring, autoconf, libjconv-bin, libjconv-dev, libnspr4-dev, libluajit-5.1-dev,
-               cslib (>= 1.4),
-               cslib-dev (>= 1.4),
+               cslib (>= 1.7),
+               cslib-dev (>= 1.7),
                zlib1g-dev | libz-dev
 Standards-Version: 3.9.6
 Homepage: https://suricata-ids.org/

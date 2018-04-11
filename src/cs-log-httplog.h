@@ -3,7 +3,6 @@
 
 #include "detect-timedelta-utils.h"
 #include <cs/cscommon.h>
-//#include <cs/PeriodicMultipleMetricsCollector.h>
 #include "detect-nanomsg.h"
 #define BUF_SIZE_HTTP sizeof(HTTPData) * 1
 static __thread NanomsgHandler nn_handler_http;
@@ -15,10 +14,10 @@ static void FillAndSendHTTPData(const Packet *p, LogHttpFileCtx *httplog_ctx, ht
 {
     if ( nn_init_http == 0 ) {
         nn_init_http = 1;
-        NanomsgInit(&nn_handler_http, nanomsg_url_http, BUF_SIZE_HTTP);
+        NanomsgInit(&nn_handler_http, nanomsg_url_http, sizeof(HTTPData), HTTP_RECORDS);
     }
 
-    HTTPData* http = (HTTPData*)NanomsgGetNextBufferElement(&nn_handler_http, sizeof(HTTPData));
+    HTTPData* http = (HTTPData*)NanomsgGetNextBufferElement(&nn_handler_http);
     memset(http, 0, sizeof(HTTPData));
 
     http->timestamp = GetTimestampInMicroSec(p->ts);

@@ -3,7 +3,6 @@
 
 //#COLLECTIVE_SENSE #DNS
 #include <cs/cscommon.h>
-#include <cs/PeriodicMultipleMetricsCollector.h>
 #include "detect-nanomsg.h"
 #include "detect-timedelta-utils.h"
 #define BUF_SIZE_TLS sizeof(TLSData) * 10
@@ -34,19 +33,13 @@ static uint8_t DecodeTlsVersion(uint16_t version)
 }
 
 static void FillAndSendTLSData(char *srcip, char *dstip, Port sp, Port dp, const Packet *p, SSLState *state) {
-
-    static METRIC_ID tls_metric_id = 0;
-
-    if (tls_metric_id < 1)
-        tls_metric_id = register_metric(TLS_RECORDS, (const char *)"suricata_collector");
-
     if (nn_init_tls == 0) {
         nn_init_tls = 1;
-        NanomsgInit(&nn_handler_tls, nanomsg_url_tls, BUF_SIZE_TLS);
+        NanomsgInit(&nn_handler_tls, nanomsg_url_tls, sizeof(TLSData), TLS_RECORDS);
     }
 
     //tls
-    TLSData* tls = (TLSData*) NanomsgGetNextBufferElement(&nn_handler_tls, sizeof(TLSData));
+    TLSData* tls = (TLSData*) NanomsgGetNextBufferElement(&nn_handler_tls);
 
     tls->timestamp = GetTimestampInMicroSec(p->ts);
     tls->src_ip[0] = 0;
@@ -99,7 +92,6 @@ static void FillAndSendTLSData(char *srcip, char *dstip, Port sp, Port dp, const
         tls->flow_id = 0;
 
     NanomsgSendBufferIfNeeded(&nn_handler_tls);
-    update_metric(tls_metric_id, 1);
 }
 
 #endif

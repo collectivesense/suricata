@@ -1,5 +1,5 @@
 #pragma once
 
-int TestCore();
-int DetectTimeDeltaSignatureTest01();
+int TestCore(void);
+int DetectTimeDeltaSignatureTest01(void);
 

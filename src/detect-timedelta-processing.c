@@ -7,7 +7,6 @@
 #include "conf.h"
 
 #include <cs/cscommon.h>
-#include <cs/PeriodicMultipleMetricsCollector.h>
 #include "detect-timedelta-processing.h"
 #include "detect-timedelta-utils.h"
 #include "detect-timedelta-flow.h"
@@ -807,16 +806,11 @@
 
 static int CalculateAndLogResults(FlowInfo* flow_info )
 {
-    static METRIC_ID td_metric_id = 0;
-
     //LOCAL THREAD VARAIBLES DECLARATIONS
     static __thread NanomsgHandler nn_handler_td;
     static __thread char nn_init_td = 0;
 
     TDLogDebug( flow_info->flow_id, 1, "CalculateAndLogResults" );
-
-    if (td_metric_id < 1)
-        td_metric_id = register_metric(RAW_DELAYS, (const char*)"suricata_collector");
 
     //check if data has already been logged or not initialized yet...
     if (flow_info->log_state == 1 || flow_info->flowInfoFree != ExpireFlow) //flow_info->flow_id != 1
@@ -831,11 +825,11 @@ static int CalculateAndLogResults(FlowInfo* flow_info )
         if( nn_init_td == 0 )
         {
             nn_init_td = 1;
-            NanomsgInit(&nn_handler_td, nanomsg_url_td, BUF_SIZE_TD);
+            NanomsgInit(&nn_handler_td, nanomsg_url_td, sizeof(TimedeltaResult), RAW_DELAYS);
         }
 
         assert( packet->tcp_flags == TH_SYN );
-        r = (TimedeltaResult*)NanomsgGetNextBufferElement(&nn_handler_td, sizeof(TimedeltaResult));
+        r = (TimedeltaResult*)NanomsgGetNextBufferElement(&nn_handler_td);
         SetIp_NET32_TO_HOST64(flow_info->ep.src_ip, r->src_ip);
         SetIp_NET32_TO_HOST64(flow_info->ep.dst_ip, r->dst_ip);
         r->src_port = flow_info->ep.src_port;
@@ -964,7 +958,5 @@ static int CalculateAndLogResults(FlowInfo* flow_info )
     //return LogResultsToUnified2( &r );
 
     NanomsgSendBufferIfNeeded(&nn_handler_td);
-    update_metric(td_metric_id, 1);
-
     return 1;
 }

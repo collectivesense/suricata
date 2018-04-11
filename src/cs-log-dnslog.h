@@ -3,7 +3,6 @@
 
 #include "detect-timedelta-utils.h"
 #include <cs/cscommon.h>
-#include <cs/PeriodicMultipleMetricsCollector.h>
 #include "detect-nanomsg.h"
 
 #define BUF_SIZE_DNS sizeof(DNSData) * 5
@@ -19,7 +18,6 @@ static void FillAndSendDNSInfo(const Packet *p, DNSTransaction *tx, DNSQueryEntr
     //    return;
     //}
 
-    static METRIC_ID dns_metric_id;
     static __thread uint64_t last_packet_ts;
     static __thread uint16_t r_num;
     //tx_id is a value from dns record, it has 2 bytes so there is 0-65535 possible values
@@ -28,16 +26,13 @@ static void FillAndSendDNSInfo(const Packet *p, DNSTransaction *tx, DNSQueryEntr
     //array which contains uri_or_ip of query packet for specific tx_id
     static __thread char tx_r_uri[65536][100];
 
-    if (dns_metric_id < 1)
-        dns_metric_id = register_metric(DNS_RECORDS, (const char*)"suricata_collector");
-
     if ( nn_init_dns == 0 ) {
         nn_init_dns = 1;
-        NanomsgInit(&nn_handler_dns, nanomsg_url_dns, BUF_SIZE_DNS);
+        NanomsgInit(&nn_handler_dns, nanomsg_url_dns, sizeof(DNSData), DNS_RECORDS);
     }
 
     //DNS transaction
-    DNSData* dns = (DNSData*)NanomsgGetNextBufferElement(&nn_handler_dns, sizeof(DNSData));
+    DNSData* dns = (DNSData*)NanomsgGetNextBufferElement(&nn_handler_dns);
     dns->tx_id = tx->tx_id;
     dns->tx_type = NULL != qEntry ? 0 : 1;
     dns->timestamp = GetTimestampInMicroSec(p->ts);
@@ -133,7 +128,6 @@ static void FillAndSendDNSInfo(const Packet *p, DNSTransaction *tx, DNSQueryEntr
     // printf("dns->ruri_or_ip: %s\n", dns->r_uri_or_ip);
 
     NanomsgSendBufferIfNeeded(&nn_handler_dns);
-    update_metric(dns_metric_id, 1);
 }
 //#COLLECTIVE_SENSE_END #DNS
 

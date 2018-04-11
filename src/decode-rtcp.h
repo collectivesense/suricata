@@ -160,6 +160,13 @@ typedef struct RTCPPacket_ {
 }
 RTCPPacket;
 
+uint32_t rtcp_decode_sr(const uint8_t *payload, const uint32_t len, const uint32_t start, RTCPSenderReport* sr);
+uint32_t rtcp_decode_sd(const uint8_t *payload, const uint32_t len, const uint32_t start, RTCPSourceDescription* sd);
+uint32_t rtcp_decode_xrs(const uint8_t *payload, const uint32_t len, const uint32_t start, RTCPXRStats* xrs);
+uint32_t rtcp_decode_xrm(const uint8_t *payload, const uint32_t len, const uint32_t start, RTCPXRMetrics* xrm);
+uint32_t rtcp_decode_report_blocks(const uint8_t *payload, const uint32_t len, const uint32_t start, const uint32_t end, RTCPReportBlock* rbs);
+uint8_t is_rtcp_packet(const unsigned char *payload, const uint16_t len);
+
 ///////////
 
 uint32_t rtcp_decode_sr(const uint8_t *payload, const uint32_t len, const uint32_t start, RTCPSenderReport* sr) {
