@@ -14,17 +14,10 @@ RUN apt-get update \
          libnanomsg5 \
          cslib \
          suricata=${debVer} \
-         supervisor \
-         python-pip \
-     && pip install supervisor-stdout \
      && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -g 10003 suricata
 RUN adduser --no-create-home --system --shell /bin/false --gecos 'suricata dedicated user' --uid 10003 --gid 10003 --disabled-password suricata
 
-ADD files/supervisor_suricata.conf /etc/supervisor/conf.d/supervisor_suricata.conf
-
 COPY files/docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
-
-CMD /usr/bin/supervisord -n
