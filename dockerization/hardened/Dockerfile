@@ -1,13 +1,15 @@
 FROM portus.cs.int:5000/prod/cs-base
 
 ARG destEnv
+ARG debVer
+
 MAINTAINER Collective Sense "team@collective-sense.com"
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN echo "deb http://aptly.cs.int/public xenial $destEnv" >> /etc/apt/sources.list
 RUN printf "Package: * \nPin: release a=xenial, o=aptly.cs.int \nPin-Priority: 1600 \n" > /etc/apt/preferences
 
-RUN apt-get update && apt-get -y install pfring libnanomsg5 cslib suricata supervisor
+RUN apt-get update && apt-get -y install pfring libnanomsg5 cslib suricata=${debVer} supervisor
 
 RUN apt-get install -y python-pip && pip install supervisor-stdout
 
