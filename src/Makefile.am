@@ -553,11 +553,12 @@ AM_CFLAGS = ${OPTIMIZATION_CFLAGS} ${GCC_CFLAGS} ${CLANG_CFLAGS}            \
     -Wall -Wno-unused-parameter -Wmissing-prototypes -Wmissing-declarations \
     -Wstrict-prototypes -Wwrite-strings -Wbad-function-cast                 \
     -Wformat-security -Wno-format-nonliteral -Wmissing-format-attribute     \
-    -funsigned-char
+    -funsigned-char                                                         \
+    -ggdb
 
 # different flags for different cases
 if DEBUG
-AM_CFLAGS += -ggdb -O0
+AM_CFLAGS += -O0
 endif
 
 AM_LDFLAGS = ${SECLDFLAGS}
