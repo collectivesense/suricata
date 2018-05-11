@@ -17,7 +17,7 @@ DEB_DESTDIR = $(CURDIR)/debian/suricata
 ARCH ?= $(shell dpkg --print-architecture)
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
-CONFIGURE_ARGS = --enable-luajit --enable-gccprotect --enable-pfring --enable-af-packet --enable-nfqueue --disable-gccmarch-native --disable-coccinelle
+CONFIGURE_ARGS = CFLAGS="-ggdb -O0" --enable-luajit --enable-gccprotect --enable-pfring --enable-af-packet --enable-nfqueue --disable-gccmarch-native --disable-coccinelle
 
 override_dh_auto_install:
 	dh_auto_install --destdir=$(DEB_DESTDIR)
