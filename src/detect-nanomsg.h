@@ -17,7 +17,7 @@ typedef struct NanomsgHandler_ {
 
 extern char nanomsg_disable;
 
-inline void SetIp_NET32_TO_HOST64(const uint32_t* ip_N32, uint64_t* ip_H64)
+static inline void SetIp_NET32_TO_HOST64(const uint32_t* ip_N32, uint64_t* ip_H64)
 {
     if(ip_N32[2] == 0 && ip_N32[3] == 0) {
         ip_H64[0] = (uint64_t)ntohl(ip_N32[0]);
@@ -28,7 +28,7 @@ inline void SetIp_NET32_TO_HOST64(const uint32_t* ip_N32, uint64_t* ip_H64)
     }
 }
 
-inline uint32_t NanomsgGetEnvMQBuffer(void) 
+static inline uint32_t NanomsgGetEnvMQBuffer(void)
 {
     uint32_t env_mq_buffer= 0;
     if (getenv("ENV_MQ_BUFFER") != NULL) {
@@ -59,7 +59,7 @@ do { \
  \
 } while(0)
 
-inline void NanomsgInit(NanomsgHandler* nn_handler, const char* url, uint32_t item_size, Source queue_kind) {
+static inline void NanomsgInit(NanomsgHandler* nn_handler, const char* url, uint32_t item_size, Source queue_kind) {
     assert(nn_handler != NULL);
     assert(url != NULL);
     NANOMSG_DEBUG(nn_handler, "Initializing nanomsg handler 0x%p", nn_handler);
@@ -83,11 +83,11 @@ inline void NanomsgInit(NanomsgHandler* nn_handler, const char* url, uint32_t it
     }
 }
 
-inline void NanomsgReturnBufferElement(NanomsgHandler* nn_handler) {
+static inline void NanomsgReturnBufferElement(NanomsgHandler* nn_handler) {
     cs_adaptive_buffer_release_slot(nn_handler->buffer);
 }
 
-inline void* NanomsgGetNextBufferElement(NanomsgHandler* nn_handler) {
+static inline void* NanomsgGetNextBufferElement(NanomsgHandler* nn_handler) {
     if (nn_handler == NULL) {
         NANOMSG_DEBUG(nn_handler, "ERROR NanomsgGetNextBufferElement - nn_handler == NULL\n");
         return 0;
@@ -95,7 +95,7 @@ inline void* NanomsgGetNextBufferElement(NanomsgHandler* nn_handler) {
     return cs_adaptive_buffer_get_slot(nn_handler->buffer, time(NULL));
 }
 
-inline void NanomsgSendBufferIfNeeded(NanomsgHandler* nn_handler)
+static inline void NanomsgSendBufferIfNeeded(NanomsgHandler* nn_handler)
 {
     if(likely(!nn_handler->disable_nanomsg)) {
          cs_adaptive_buffer_send_if_needed(nn_handler->buffer, nn_handler->sock, time(NULL));

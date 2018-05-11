@@ -158,7 +158,7 @@
         else
         {
             TDLogDebug( flow_info->flow_id, 2, "ACK to something else - forwarding to T4" );
-            ProcessPacketT4( packet, flow_info, packet_type );
+            return ProcessPacketT4( packet, flow_info, packet_type );
 
             //if( packet->payload_len > 0 )
             //    return ProcessPacketT6( packet, flow_info, packet_type );

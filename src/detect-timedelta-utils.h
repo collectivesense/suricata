@@ -12,13 +12,13 @@
 
     typedef uint64_t TimeInMicroSec;
 
-    inline TimeInMicroSec GetTimestampDiff( struct timeval ts1, struct timeval ts2 )
+    static inline TimeInMicroSec GetTimestampDiff( struct timeval ts1, struct timeval ts2 )
     {
         return MILLION*( ts1.tv_sec  - ts2.tv_sec  )
                   +    ( ts1.tv_usec - ts2.tv_usec );
     }
 
-    inline TimeInMicroSec GetTimestampInMicroSec( struct timeval ts )
+    static inline TimeInMicroSec GetTimestampInMicroSec( struct timeval ts )
     {
         //printf("####### GetTimestampInMicroSec: sec: %u, usec: %u\n", ts.tv_sec, ts.tv_usec);
         if (ts.tv_usec >= MILLION)
@@ -27,7 +27,7 @@
             return MILLION*ts.tv_sec + ts.tv_usec;
     }
 
-    inline TimeInMicroSec GetTimestampInNanoSec( struct timeval ts )
+    static inline TimeInMicroSec GetTimestampInNanoSec( struct timeval ts )
     {
         //printf("####### GetTimestampInNanoSec: sec: %u, nsec: %u\n", ts.tv_sec, ts.tv_usec);
         if (ts.tv_usec < MILLION)
@@ -40,7 +40,7 @@
 
     void   UpdateCurrentTime( TimeInMicroSec now, FlowId flow_id );
 
-    inline TimeInMicroSec GetCurrentTime(void)
+    static inline TimeInMicroSec GetCurrentTime(void)
     {
         return g_current_time;
     }
