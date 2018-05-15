@@ -165,6 +165,8 @@ typedef struct PfringThreadVars_
     char *bpf_filter;
 
      ChecksumValidationMode checksum_mode;
+
+    int64_t ts_sw_hw_diff_usec;
 } PfringThreadVars;
 
 /**
@@ -244,6 +246,23 @@ static inline void PfringProcessPacket(void *user, struct pfring_pkthdr *h, Pack
     if (h->extended_hdr.timestamp_ns){
         p->ts.tv_sec = h->extended_hdr.timestamp_ns/(1000*1000*1000);
         p->ts.tv_usec = (h->extended_hdr.timestamp_ns/1000)%(1000*1000);
+
+        //sometimes HW timestamps can be unsynchronized with system clock
+        //system clock is our "valid" time (and no matter if it is also unsynchronized)
+        //in anycase we have to + or - diff between sw and hw value to the final ts
+        //check diff in every 1000 000 packets
+        if (ptv->pkts - 1 % 1000000 == 0) {
+            struct timeval sw_ts_tv;
+            gettimeofday((struct timeval *)&sw_ts_tv, NULL);
+            int64_t ts_sw_usec = (1000000 * sw_ts_tv.tv_sec + sw_ts_tv.tv_usec);
+
+            ptv->ts_sw_hw_diff_usec = h->extended_hdr.timestamp_ns/1000;
+            ptv->ts_sw_hw_diff_usec = ts_sw_usec - ptv->ts_sw_hw_diff_usec;
+        }
+
+        int64_t ts_tmp = (int64_t)h->extended_hdr.timestamp_ns/1000 + ptv->ts_sw_hw_diff_usec;
+        p->ts.tv_sec = ts_tmp / (1000*1000);
+        p->ts.tv_usec = ts_tmp % (1000*1000);
     } else if (h->ts.tv_sec == 0) {
         //PF_RING may fail to set timestamp
         gettimeofday((struct timeval *)&p->ts, NULL);
