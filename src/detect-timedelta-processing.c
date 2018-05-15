@@ -866,7 +866,7 @@ static int CalculateAndLogResults(FlowInfo* flow_info )
     else
     {
         TDLogDebug( flow_info->flow_id, 2, "FIRST packet is EMPTY - log skipped");
-        printf("FIRST packet is EMPTY - log skipped\n");
+        //printf("FIRST packet is EMPTY - log skipped\n");
         return 0;
     }
 

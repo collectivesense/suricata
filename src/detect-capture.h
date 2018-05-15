@@ -296,7 +296,7 @@ void PacketHeaderCapture(const Packet* packet)
 
     uint8_t retransmission = 0;
 
-    if (packet->flow != NULL && packet->proto == 6) {
+    if (packet->flow != NULL && packet->proto == 6 && packet->ethh != NULL) {
 
         //printf("packet->flow->flowInfo.pp_cur_id: %d\n", packet->flow->flowInfo.pp_cur_id);
         if (packet->flow->flowInfo.pp_cur_id != packet->flow->flowInfo.pp_id) {
