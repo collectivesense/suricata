@@ -164,7 +164,7 @@ typedef struct PfringThreadVars_
 
     char *bpf_filter;
 
-     ChecksumValidationMode checksum_mode;
+    ChecksumValidationMode checksum_mode;
 
     int64_t ts_sw_hw_diff_usec;
 } PfringThreadVars;
@@ -244,8 +244,8 @@ static inline void PfringProcessPacket(void *user, struct pfring_pkthdr *h, Pack
 
     //Copy timestamp, prefer hw timestamp
     if (h->extended_hdr.timestamp_ns){
-        p->ts.tv_sec = h->extended_hdr.timestamp_ns/(1000*1000*1000);
-        p->ts.tv_usec = (h->extended_hdr.timestamp_ns/1000)%(1000*1000);
+        //p->ts.tv_sec = h->extended_hdr.timestamp_ns/(1000*1000*1000);
+        //p->ts.tv_usec = (h->extended_hdr.timestamp_ns/1000)%(1000*1000);
 
         //sometimes HW timestamps can be unsynchronized with system clock
         //system clock is our "valid" time (and no matter if it is also unsynchronized)

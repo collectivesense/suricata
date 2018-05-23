@@ -35,7 +35,7 @@ override_dh_auto_install:
 
 override_dh_auto_configure:
 #	./configure
-	dh_auto_configure -- CFLAGS='-ggdb -O0 -march=native' $(CONFIGURE_ARGS)
+	dh_auto_configure -- $(CONFIGURE_ARGS)
 
 override_dh_clean:
 	rm -f suricata-debian.yaml
