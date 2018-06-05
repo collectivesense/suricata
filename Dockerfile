@@ -1,4 +1,4 @@
-FROM portus.cs.int:5000/prod/cs-dbuild-capps
+FROM docker-registry.cs.int/prod/cs-dbuild-capps
 ARG destEnv
 
 RUN echo "deb http://aptly.cs.int/public xenial $destEnv" >> /etc/apt/sources.list
