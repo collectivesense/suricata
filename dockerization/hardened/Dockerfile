@@ -19,5 +19,8 @@ RUN apt-get update \
 RUN groupadd -g 10003 suricata
 RUN adduser --no-create-home --system --shell /bin/false --gecos 'suricata dedicated user' --uid 10003 --gid 10003 --disabled-password suricata
 
+COPY files/version.sh /version.sh
+RUN ln -s /version.sh /usr/bin/version
+
 COPY files/docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
