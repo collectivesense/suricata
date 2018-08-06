@@ -3126,7 +3126,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        printf("USAGE: suricata < init_config_file>\n");
+        printf("USAGE: suricata <init_config_file>\n");
         return 1;
     }
 }

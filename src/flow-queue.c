@@ -145,6 +145,14 @@ Flow *FlowDequeue (FlowQueue *q)
  */
 void FlowMoveToSpare(Flow *f)
 {
+    //#TIMEDELTA
+    if(f->flowInfo.flowInfoFree != NULL)
+    {
+        //printf("FlowRecycler -> flowInfoFree\n");
+        f->flowInfo.flowInfoFree(&f->flowInfo);
+    }
+    //#TIMEDELTA_END
+
     /* now put it in spare */
     FQLOCK_LOCK(&flow_spare_q);
 
