@@ -77,6 +77,14 @@ Flow *FlowAlloc(void)
  */
 void FlowFree(Flow *f)
 {
+    //#TIMEDELTA
+    if(f->flowInfo.flowInfoFree != NULL)
+    {
+        //printf("FlowFree calls flowInfoFree\n");
+        f->flowInfo.flowInfoFree(&f->flowInfo);
+    }
+    //#TIMEDELTA_END
+
     FLOW_DESTROY(f);
     SCFree(f);
 

@@ -321,7 +321,7 @@
             //KK
             //printf("ProcessPacketRS -init...\n");
             FlowInfo_InitPacket( flow_info, 1, packet, PT_DIR_SC );
-            TDLogDebug( flow_info->flow_id, 1, "ProcessPacketRS -> ExpireFlow" );
+            TDLogDebug( flow_info->flow_id, 1, "ProcessPacketRS -> CalculateAndLogResults" );
             //printf("ProcessPacketRS -> ExpireFlow\n");
             CalculateAndLogResults(flow_info);
 
@@ -357,13 +357,13 @@
                 {
                     return ProcessPacketT2( packet, flow_info );
                 }
-		//else
-		//{
-                //    if( packet->payload_len > 0 )
-	        //        return ProcessPacketT6( packet, flow_info, packet_type );
-                //    else
-                //        return ProcessPacketT5( packet, flow_info, packet_type );
-		//}
+                // else
+                // {
+                //     if( packet->payload_len > 0 )
+                //         return ProcessPacketT6( packet, flow_info, packet_direction );
+                //     else
+                //         return ProcessPacketT5( packet, flow_info, packet_direction );
+                // }
 
             /* yes, no break */
 
@@ -384,7 +384,6 @@
                 }
                 else
                 {
-		    //printf("Unhandled packet\n");
                     TDLogDebug( flow_info->flow_id, 2, "Unhandled packet" );
                     return 0;
                 }
@@ -440,12 +439,17 @@
             TDLogWarning( flow_info->flow_id, 2, "[ooo] Received too many ooo packets for this flow.  Giving up (expiring this flow)" );
 
             TDLogDebug( flow_info->flow_id, 1, "PacketHandler_AddOooPacket -> CalculateAndLogResults" );            
-            // see if there's a T6 packet stuck in ooo array due to no T5 and process it (T5 is optional)
-            int recovered_T6 = ProcessT6inOooDueToNoT5ifFound( flow_info );
-            // log T data we're after (whatever data we collected up until this point
 
-            //printf("PacketHandler_AddOooPacket -> CalculateAndLogResults\n");
-            CalculateAndLogResults( flow_info );
+            // to avoid too many ooo_packet checks - check flow_info->log_state
+            int recovered_T6 = TD_RET_ERR;
+            if (flow_info->log_state == 0) {
+                // see if there's a T6 packet stuck in ooo array due to no T5 and process it (T5 is optional)
+                recovered_T6 = ProcessT6inOooDueToNoT5ifFound( flow_info );
+                // log T data we're after (whatever data we collected up until this point
+
+                //printf("PacketHandler_AddOooPacket -> CalculateAndLogResults\n");
+                CalculateAndLogResults( flow_info );
+            }
 
             if( recovered_T6 == TD_RET_FLAG_USED_T6_WITHOUT_T5 )
             {
