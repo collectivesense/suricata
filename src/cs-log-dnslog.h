@@ -52,7 +52,7 @@ static void FillAndSendDNSInfo(const Packet *p, DNSTransaction *tx, DNSQueryEntr
     }
 
     dns->r_num = r_num++; //special record number in packet
-    dns->tx_rcode = NULL == aEntry && tx->rcode ? tx->rcode : 0;
+    dns->tx_rcode = tx->rcode;
     dns->tx_recursion_desired = NULL == aEntry && NULL == qEntry && tx->rcode == 0 && tx->recursion_desired ? 1 : 0;
     //IPs & ports
     dns->src_ip[0] = 0;
