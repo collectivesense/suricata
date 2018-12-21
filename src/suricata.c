@@ -185,6 +185,9 @@ char tls_log_write_to_file = FALSE;
 char http_log_write_to_file = FALSE;
 char fast_log_write_to_file = FALSE;
 char nanomsg_disable = FALSE; // to be able to work without connection to mq-broker
+char ph_enabled = FALSE;
+char delays_enabled = FALSE;
+char rtcp_enabled = FALSE;
 //#COLLECTIVE_SENSE_END
 
 #include "util-lua.h"

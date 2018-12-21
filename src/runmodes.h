@@ -108,4 +108,10 @@ extern float threading_detect_ratio;
 
 extern int debuglog_enabled;
 
+//#COLLECTIVE_SENSE
+extern char ph_enabled;
+extern char delays_enabled;
+extern char rtcp_enabled;
+//#COLLECTIVE_SENSE_END
+
 #endif /* __RUNMODES_H__ */

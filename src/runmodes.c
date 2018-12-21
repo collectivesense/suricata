@@ -686,6 +686,9 @@ void RunModeInitializeOutputs(void)
     char tls_store_present = 0;
 
     TAILQ_FOREACH(output, &outputs->head, next) {
+        //#COLLECTIVE_SENSE #HTTP
+        char cs_special_flag = 0;
+        //#COLLECTIVE_SENSE_END #HTTP
 
         output_config = ConfNodeLookupChild(output, output->val);
         if (output_config == NULL) {
@@ -737,6 +740,18 @@ void RunModeInitializeOutputs(void)
         } else if (strcmp(output->val, "tls-log") == 0) {
             tls_log_enabled = 1;
         }
+        //#COLLECTIVE_SENSE #HTTP
+        else if (strcmp(output->val, "ph-log") == 0) {
+            ph_enabled = 1;
+            cs_special_flag = 1;
+        } else if (strcmp(output->val, "delays-log") == 0) {
+            delays_enabled = 1;
+            cs_special_flag = 1;
+        } else if (strcmp(output->val, "rtcp-log") == 0) {
+            rtcp_enabled = 1;
+            cs_special_flag = 1;
+        }
+        //#COLLECTIVE_SENSE_END #HTTP
 
         OutputModule *module;
         int count = 0;
@@ -780,8 +795,11 @@ void RunModeInitializeOutputs(void)
             }
         }
         if (count == 0) {
-            FatalErrorOnInit(SC_ERR_INVALID_ARGUMENT,
-                "No output module named %s", output->val);
+            //#COLLECTIVE_SENSE #HTTP
+            if (!cs_special_flag)
+            //#COLLECTIVE_SENSE_END #HTTP
+                FatalErrorOnInit(SC_ERR_INVALID_ARGUMENT,
+                    "No output module named %s", output->val);
             continue;
         }
     }

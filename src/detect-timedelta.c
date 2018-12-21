@@ -58,20 +58,25 @@ int DetectTimeDeltaMatch( ThreadVars* thread_vars, DetectEngineThreadCtx* det_ct
     //PacketTSValidationAndFix(packet);
 
     //RTCP CAPTURE HANDLER
-    if ( is_rtcp_packet(packet->payload, packet->payload_len)
-        && packet->sp > 1024 //aditional most common ports (because rfc mask algo is not as precisely as we expect)
-        && packet->dp > 1024 ) {
-        RTCPCapture(packet);
+    if (rtcp_enabled) {
+        if ( is_rtcp_packet(packet->payload, packet->payload_len)
+            && packet->sp > 1024 //aditional most common ports (because rfc mask algo is not as precisely as we expect)
+            && packet->dp > 1024 ) {
+            RTCPCapture(packet);
+        }
     }
 
     //PACKET HEADER CAPTURE HANDLER
     //Let's risk capturing packet without a flow
-    PacketHeaderCapture(packet);
+    if (ph_enabled) {
+        PacketHeaderCapture(packet);
+    }
 
     // the core plugin functionality
-    if(packet->proto == 6)
-        PacketHandler( packet, (FlowId) packet->flow, 0, NULL );
-
+    if (delays_enabled) {
+        if(packet->proto == 6)
+            PacketHandler( packet, (FlowId) packet->flow, 0, NULL );
+    }
     // return no match (I think Suricata would log it if we returned 1, and there's no point in doing that)
     return 0;   //TODO see if 1 vs 0 affects performance, maybe 1 ceases inspection of other rules
 }

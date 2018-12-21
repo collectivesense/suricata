@@ -328,6 +328,15 @@ outputs:
       append: yes
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
 
+  - ph-log:
+      enabled: yes
+
+  - delays-log:
+      enabled: yes
+
+  - rtcp-log:
+      enabled: yes
+
   # Packet log... log packets in pcap format. 3 modes of operation: "normal"
   # "multi" and "sguil".
   #
